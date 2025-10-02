@@ -1,0 +1,19 @@
+name: ML Run Original
+# on mentions a trigger for the workflow
+on: 
+    push: # when a push is made to the main branch of the repository
+      branches:
+           - main
+jobs:
+  ml_run:
+    runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
+    container:
+      images: jupyter/scipy-notebook:lates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # uses the checkout action to checkout the code
+
+      - name: Run the script
+        run: |
+          python ml_example.py
