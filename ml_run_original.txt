@@ -1,0 +1,23 @@
+name: ML Run Original
+# on mentions a trigger for the workflow
+on: 
+    push: # when a push is made to the main branch of the repository
+      branches:
+           - master
+jobs:
+  ml_run:
+    runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # uses the checkout action to checkout the code
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn
+          pip install numpy
+
+      - name: Run the script
+        run: |
+          python ml_example.py

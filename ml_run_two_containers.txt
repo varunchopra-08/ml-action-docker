@@ -1,0 +1,60 @@
+name: ML Run
+# on mentions a trigger for the workflow
+on: 
+    push: # when a push is made to the main branch of the repository
+      branches:
+           - master
+jobs:
+  ml_run:
+    runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
+    container:
+      image: jupyter/scipy-notebook:latest # uses the scipy-notebook image from the jupyter repository
+      options: --user root # runs the workflow as the root user
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # uses the checkout action to checkout the code
+
+      - name: List installed Python packages
+        run: |
+          pip list
+
+      - name: Run the script
+        run: |
+          python ml_example.py
+
+
+  deploy:    # this job runs completely on own runner 
+    needs: ml_run # this job depends on the ml_run job
+    runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
+    container:
+      image: jupyter/scipy-notebook:latest # uses the scipy-notebook image from the jupyter repository
+      options: --user root # runs the workflow as the root user
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # uses the checkout action to checkout the code
+      
+      - name: check if tslearn is installed in container
+        id: check_tslearn
+        run: |
+          if pip list | grep -q tslearn; then
+            echo 'tslearn is installed'
+            echo 'tslearn_installed=true' >> $GITHUB_OUTPUT
+          else
+            echo 'tslearn is not installed'
+            echo 'tslearn_installed=false' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies 
+        if: steps.check_tslearn.outputs.tslearn_installed == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run the script
+        run: |
+          python ml_example_2.py    
+
+      - name: deploy
+        run: echo 'deployment of the model'

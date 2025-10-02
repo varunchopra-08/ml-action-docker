@@ -1,0 +1,46 @@
+name: ML Run
+# on mentions a trigger for the workflow
+on: 
+    push: # when a push is made to the main branch of the repository
+      branches:
+           - master
+jobs:
+  ml_run:
+    runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
+    container:
+      image: jupyter/scipy-notebook:latest # uses the scipy-notebook image from the jupyter repository
+      options: --user root # runs the workflow as the root user
+
+    services: # services are containers that are used by the workflow
+      postgres: 
+        image: postgres:14 # uses the postgres:14 image from the postgres repository
+        env: # environment variables for the container
+          POSTGRES_USER: ab
+          POSTGRES_PASSWORD: ab_post
+          POSTGRES_DB: ab_db
+        ports:
+          - 5432:5432 # maps the port 5432 of the container to the port 5432 of the host
+        options: >-
+          --health-cmd="pg_isready -U ab"
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # uses the checkout action to checkout the code
+
+      - name: Install dependencies
+        run: |
+          pip install psycopg2-binary 
+
+      - name: save iris data to postgresql
+        run: |
+          echo "iris data to be saved in postgresql database"
+          python save2post.py
+
+      - name: get iris data from postgresql
+        run: |
+          echo "iris data to be retrieved from postgresql database"
+          python getfrompost.py
