@@ -3,7 +3,7 @@ name: ML Run Original
 on: 
     push: # when a push is made to the main branch of the repository
       branches:
-           - master
+           - main
 jobs:
   ml_run:
     runs-on: ubuntu-latest # runs the workflow on the latest ubuntu version
